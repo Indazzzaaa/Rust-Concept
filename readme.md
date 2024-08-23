@@ -134,3 +134,115 @@ fn main() {
 }
 
 ```
+
+## Understanding Rust Data Model : Ownership, Bollowing, Slices
+
+### Ownership and Borrowing.
+
+- `Ownership` helps rust to provide memory safety without using the garbage collector. If those rules got voilated program won't compile.
+- `Stack vs Heap` : Both are the parts of memory available to our code to use at runtime.
+
+  - | Stack                                                                                                                                       | Heap                                                                                                                                                                                                                                             |
+    | :------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | Allocating data is very fast : ~10-100 ns                                                                                                   | Allocating data is slow comparison to stack : ~100 - 1000ns                                                                                                                                                                                      |
+    | Simple mechanism just allocate the data LIFO.                                                                                               | Complex mechanism first find right fit block then allocate and returns it's pointer.                                                                                                                                                             |
+    | All data stored must have a known, fixed size and<br />data unknown at compile time or may change <br />at runtime will be stored on heap. | Since it's used for allocating data which is unknown size at compile time or<br />may changes at runtime. It first finds block that can fit the required data and then<br />returns the pointer to it whose size we know, and store it on stack. |
+- **Ownership**
+
+  - As we know there are two places where we can define out data 1. Stack , 2. Heap.
+  - Stack Allocation : data created on this will be copied by value when we assign to another variable like happens in other languages.
+
+    ```rust
+    // here both x and y will have 10 value in there respective memory.
+    let x =10;
+    let y =x; 
+    ```
+  - Heap Allocation: That is where `ownership and borrowing` rules are seen. Each value in Rust has an owner (Always think for value stored in heap which will makes more sense here). There can only be one owner of data at a time. `Reason : The memory allocated on heap must have to be freed after use, otherwise it will create memory leak, rust does by calling drop method, now for calling drop rust must know which is actual owner of that data`. So as owner goes out of scope rust free that memory `because of drop trait` .
+- **Move**
+
+  ```rust
+
+  let s = "Hello world" ; // this is immutable (hardcoded in compiled binary it's type is &str)
+  let ss = s; // totally valid since both are part of the stack only.
+  println!("{}",s);
+
+  // Ownership transfer : We call this process MOVE.
+  let s2 = String::from("Hello World");
+  let s3 = s2;  // This is where MOVE happens and now s3 is owner of that heap data and s2 no longer valid. There is also api available to make deep copy of it so s2 and s3 can exist independently. eg. s3 = s1.cone();
+  println!("{}",s2); // if we try to access the value now our program will panic.
+
+  ```
+
+  **Q. You might be wondered why this is doesn't seen on the stack variables ?**
+
+  **R.** Rust has implemented the `copy trait` for all the primitive types. `Rust won't let us annotate a type with copy if the type or any of its internal type has implemented the Drop trait(this is implemented on the type which are stored on the heap)`.
+- **Types implements the Copy trait :** All the integers, boolean, float, char , tuples(only if they only types having copy trait).
+
+  ```rust
+  // Here tuple does not have the copy trait, because here it using String which is using drop trait.
+  let tup: (i32, String);
+  ```
+
+    
+
+- **Borrowing**
+
+  - Since we saw earlier that on assignment ownership transfered and this is applicable even for function when we pass the value. That's where borrowing comes in picture.
+  - Let see why borrowing can be usefull, below are the example of transfering ownerships.
+
+    ![1724387499884](image/readme/1724387499884.png)
+- Borrowing is  implemented using reference `(&)` which does not move data(just like you car can be borrow for use by your friends but it still your car). Now reference also can be given permission to mutate the borrowed data `Obvious : the owner of data must have the mutation permission in first place then only the borrower can be given same.`
+
+```rust
+fn main(){
+let mut s1 = String::from("hello");
+give_me_ref(&s1);
+give_me_mutatin_ref(&mut s2);
+}
+
+fn give_me_ref(s: &String) {
+ // do something with ref, but can't mutate it.
+}
+
+fn give_me_mutating_ref(s: &mut String){
+// do something with ref, but now we can mutate it as well.
+}
+```
+
+![1724387931978](image/readme/1724387931978.png)
+
+**Q. So seeing these things you might be thinking how rust stops from data races ?**
+
+- **Ownership Rules :**  1. Each value in rust has a single owner `ownership of a value can be transferred, but at any given time, there is only one owner of that value`. 2. When the owner goes out of scope the value is dropped `This ensure that the memory is automatically free when it's no longer needed`.
+- **Borrowing Rules :** We can have either one mutable reference or any number of immutable references to a value at any one time, but not both.
+
+**Q. So dangling reference does not create problem, how does rust save us from those ?**
+
+- Dangling references are the biggest issue of programming languages like cpp/c, But rust saves us by checking those scenarios at compile time only try to run the below code.
+
+  ![1724388694921](image/readme/1724388694921.png)
+
+
+## Slice Type
+
+- Slices let you reference a contiguous sequence of elements in a collection rather than the whole collection. A slice is a kind of reference, so it does not have ownership.
+- And it  can also be given mutable permission.
+
+  ![1724389171387](image/readme/1724389171387.png)
+
+ **Q. Why its good to use &str instead of &String ?**
+
+![1724389326772](image/readme/1724389326772.png)
+
+- For other data types slice type will be represented as : &[i32/bool/...]
+- This how we can create and pass the mutable slices.
+
+  ```rust
+  let mut s = "Hello world".to_string();
+  data_add(&mut s[0..4]);
+
+  fn data_add(container: &mut str){
+  // we can mutate the data in container slice.
+  }
+  ```
+  **Note: String slice range indices must occur at valid UTF-8 character boundaries, If you attempt to create a string slice in the middle of a multibyte character, the our program will exit with an error. For here example purpose we assumed string to have ASCII only. Will talk more on that later.**
