@@ -1,0 +1,7 @@
+{
+    "code-runner.executorMap": {
+        // --quiet surpasses the build results.
+        // But also supasses all the warnings so use it carefully.
+        "rust": "cargo run --quiet"
+    }
+}
