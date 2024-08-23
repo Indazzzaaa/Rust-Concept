@@ -255,9 +255,7 @@ fn give_me_mutating_ref(s: &mut String){
 - **Self :** This is data type which represents the current instance of the struct. and all instance method first argument is one of these types 1. self `transfering ownership` , 2. &self `borrowing instance immutably` 3. &mut self `borrowing instance mutably`.
 
   ```rust
-  #[allow(warnings)]
-
-  #[derive(Debug)] // It enables struct to used inside the println!.
+  #[derive(Debug)] // It enables struct to log in console using println!.
   struct User {
       active: bool,
       username: String,
@@ -315,5 +313,92 @@ fn give_me_mutating_ref(s: &mut String){
       let color1 = Color(1,1,1);
       println!("{}",color1.0);
 
+  }
+  ```
+
+## Logging in Rust
+
+For logging primitive types or any compound types (arrays, tuples,structs) we have two macros `print!() and println!()`.
+
+-	`{}`: Prints using `Display` (default for basic types like `i32`, `&str`).
+
+-	`{:?}`: Prints using `Debug` (for structs, enums, array, tuples etc.).
+
+-	`{:#?}`: Pretty-prints using `Debug`.
+
+-	`{:<}`, `{:>}`, `{:^}`: Alignment for left, right, or center.
+
+-	`{:.2}`: Floating point precision.
+
+-	`{:#x}`, `{:#b}`, `{:#o}`: Formats for hexadecimal, binary, and octal.
+
+
+## Enums And Pattern Matching
+
+- While structs helps in grouping data, enums helsp to say that this data will have one of these values. Unlike programming languages like java or cpp enums in rust can be made to very complex type.We can also define the functions for the enum as well like we did for structs but look for docs if that's what you are interested in.
+- Matching : This is similar to `switch` in other programming languages. And its widely used when dealing with the enums like `Result` or `Option<T> { None, Some(T)} rust does not have null so in scenarios where values can be null or else we use Option enum, and it's included you the prelude(it's like set of api's which rust addes for us so we don't have to import everytime.)`
+
+```rust
+enum IpAddrKind{
+V4,
+V6,
+}
+
+let four = IpAddrKind::V4;
+let six = IpAddrKind::V6;
+```
+
+```rust
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+// Function to process different types of messages
+fn process_message(msg: Message) {
+    match msg {
+        Message::Quit => println!("Received Quit message"),
+        Message::Move { x, y } => println!("Move to ({}, {})", x, y),
+        Message::Write(text) => println!("Write: {}", text),
+        Message::ChangeColor(r, g, b) => println!("Change color to RGB({}, {}, {})", r, g, b),
+    }
+}
+
+fn main() {
+    // Create different types of messages
+    let quit_message = Message::Quit;
+    let move_message = Message::Move { x: 10, y: 20 };
+    let write_message = Message::Write(String::from("Hello, Rust!"));
+    let color_message = Message::ChangeColor(255, 128, 0);
+
+    // Process each message
+    process_message(quit_message);
+    process_message(move_message);
+    process_message(write_message);
+    process_message(color_message);
+}
+
+```
+
+- Matches in rust are exhaustive `means we have to create arm for each possible type enum can have` to save us from this we use `catch_all patterns` by adding the placeholder `_` in the end so we don't have to wrtie the all arms.
+
+  ```rust
+  let dice_roll = 9;
+  match dice_roll {
+  	3 => 3+1;
+  	7 => 7-1;
+  	_ => 0; // this is where we are catching all other possibility.
+  }
+  ```
+- We can have concise control using if like below.
+
+  ```rust
+    let config_max = Some(3u8);
+      if let Some(max) = config_max {
+          println!("The maximum is configured to be {}", max);
+      }else{
+  	println!("No max data available");
   }
   ```
