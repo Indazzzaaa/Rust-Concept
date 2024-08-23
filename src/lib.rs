@@ -1,3 +1,3 @@
-pub fn hello_world(){
-    println!("Hello world");
-}
+mod user_info;
+
+pub use user_info::test;

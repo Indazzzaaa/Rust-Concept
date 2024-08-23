@@ -6,7 +6,6 @@
 
 * Rust Tooling
 
-
 ![](assets/20240823_062353_image.png)
 
 ## Comments
@@ -80,7 +79,6 @@
   // to access values : a[0], [1]. but unlike c/cpp when we access the index which is not part of array our program will panic at runtime and exit.
   ```
 
-
 ## Statement and Expression
 
 - Anything ended with `;` is called `statement` and `expression` is part of statement. `Expression` evaluates to a resultant value. While `statement` performs some action but do not returns the value.
@@ -96,7 +94,6 @@
   	}  // after this value of y = x+1;
   ```
 
-
 ## Function
 
 ```rust
@@ -110,7 +107,6 @@ fn five() -> i32 {5}
 fn plus_one(x: i32) -> i32 {x+1}
 
 ```
-
 
 ## Control Flow
 
@@ -182,9 +178,6 @@ fn main() {
   // Here tuple does not have the copy trait, because here it using String which is using drop trait.
   let tup: (i32, String);
   ```
-
-    
-
 - **Borrowing**
 
   - Since we saw earlier that on assignment ownership transfered and this is applicable even for function when we pass the value. That's where borrowing comes in picture.
@@ -222,7 +215,6 @@ fn give_me_mutating_ref(s: &mut String){
 
   ![1724388694921](image/readme/1724388694921.png)
 
-
 ## Slice Type
 
 - Slices let you reference a contiguous sequence of elements in a collection rather than the whole collection. A slice is a kind of reference, so it does not have ownership.
@@ -245,4 +237,83 @@ fn give_me_mutating_ref(s: &mut String){
   // we can mutate the data in container slice.
   }
   ```
+
   **Note: String slice range indices must occur at valid UTF-8 character boundaries, If you attempt to create a string slice in the middle of a multibyte character, the our program will exit with an error. For here example purpose we assumed string to have ASCII only. Will talk more on that later.**
+
+
+## Structs and Methods
+
+- Structs are the building block for creating the complex type `which we can create with tuple as well` but in this we can define names to it and structs can have the methods to it as well, structs does something like similar to classes in other programming language.
+- **Types of structs**
+
+  1. General Struct: which you will see in example below.
+  2. Tuple type structs.
+  3. Place holder structs.
+- **Structs Methods** : There are 2 types of methods we can create with structs. 1. Associative methods `acts like static method in other programming language`, 2. Instance method `similar to function we define in classes`.
+
+  **Note:** Struct can contain anytype of variable but for reference type we have to add the lifetime we'll see later how to use them in our structs, in below example we are only working with  non-reference types.
+- **Self :** This is data type which represents the current instance of the struct. and all instance method first argument is one of these types 1. self `transfering ownership` , 2. &self `borrowing instance immutably` 3. &mut self `borrowing instance mutably`.
+
+  ```rust
+  #[allow(warnings)]
+
+  #[derive(Debug)] // It enables struct to used inside the println!.
+  struct User {
+      active: bool,
+      username: String,
+  }
+
+  // We can split this impl block to multiple impl blocks as well if code becomes too big.
+  impl User {
+      // Associative methods : Active like static method in other languages.
+      // when the names are same we can omit the left side.
+      fn new(active: bool, username: String) -> Self {
+          Self { active, username }
+      }
+
+      // we can create user from other user object.
+      // rust support destruct property but its must be in the end only.
+      fn from(otheruser: Self, username: String) -> Self {
+          Self {
+              username,
+              ..otheruser
+          }
+      }
+
+      fn get_active_status(&self) -> bool {
+          self.active
+      }
+
+      fn set_active_status(&mut self, active: bool){
+          self.active = active;
+      }
+
+      fn get_username(&self) -> &str {
+          &self.username
+      }
+
+
+  }
+
+  // Other types of structs.
+
+  // Tuple structs
+  struct Color(i32, i32, i32);
+  struct Point(i32, i32, i32);
+
+  // Place-Holder Structs
+  struct AlwaysEqual;
+
+
+
+  pub fn test(){
+
+      let user1 = User::new(true, String::from("sumant@patel"));
+      // have to use {:?} or {:#?} for printing the struct or we can implement the display trait which we will look later.
+      println!("{:?}",user1); 
+
+      let color1 = Color(1,1,1);
+      println!("{}",color1.0);
+
+  }
+  ```
